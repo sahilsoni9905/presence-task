@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
-
 import 'package:google_fonts/google_fonts.dart';
 import 'package:presence/auth/repository/auth_repository.dart';
 
@@ -23,6 +22,7 @@ class OtpAuthScreen extends ConsumerStatefulWidget {
 class _OtpAuthScreenState extends ConsumerState<OtpAuthScreen> {
   final List<TextEditingController> _otpControllers =
       List.generate(6, (_) => TextEditingController());
+  final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
   Timer? _timer;
   int _seconds = 40;
   bool _canResend = false;
@@ -31,12 +31,18 @@ class _OtpAuthScreenState extends ConsumerState<OtpAuthScreen> {
   void initState() {
     super.initState();
     _startTimer();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FocusScope.of(context).unfocus();
+      _focusNodes[0].requestFocus();
+    });
   }
 
   @override
   void dispose() {
     _timer?.cancel();
     _otpControllers.forEach((controller) => controller.dispose());
+    _focusNodes.forEach((node) => node.dispose());
     super.dispose();
   }
 
@@ -67,7 +73,9 @@ class _OtpAuthScreenState extends ConsumerState<OtpAuthScreen> {
     return SizedBox(
       width: 40,
       child: TextField(
+        autofocus: index == 0,
         controller: _otpControllers[index],
+        focusNode: _focusNodes[index],
         keyboardType: TextInputType.number,
         textAlign: TextAlign.center,
         maxLength: 1,
@@ -80,9 +88,9 @@ class _OtpAuthScreenState extends ConsumerState<OtpAuthScreen> {
         ),
         onChanged: (value) {
           if (value.isNotEmpty && index < 5) {
-            FocusScope.of(context).nextFocus();
+            _focusNodes[index + 1].requestFocus();
           } else if (value.isEmpty && index > 0) {
-            FocusScope.of(context).previousFocus();
+            _focusNodes[index - 1].requestFocus();
           }
         },
       ),
@@ -90,8 +98,11 @@ class _OtpAuthScreenState extends ConsumerState<OtpAuthScreen> {
   }
 
   void verifyOtp() {
+    // this function is not called when i am clicking on verify
+    print('reached here for veriftying otp');
     String userOTP =
         _otpControllers.map((controller) => controller.text).join();
+    print('reached here for veriftying otp and our otp is $userOTP');
     ref.read(AuthRepositoryProvider).verifyOTP(
         context: context,
         verificationId: widget.verificationId,
@@ -138,13 +149,13 @@ class _OtpAuthScreenState extends ConsumerState<OtpAuthScreen> {
                       '(+${widget.countryCode}) ',
                       style: GoogleFonts.poppins(
                           fontSize: screenHeight * 0.018,
-                          color: Color(0xFF008173)),
+                          color: const Color(0xFF008173)),
                     ),
                     Text(
                       '${widget.phoneNumber}  ',
                       style: GoogleFonts.poppins(
                           fontSize: screenHeight * 0.018,
-                          color: Color(0xFF008173)),
+                          color: const Color(0xFF008173)),
                     ),
                     const Icon(
                       Icons.edit,
@@ -183,7 +194,7 @@ class _OtpAuthScreenState extends ConsumerState<OtpAuthScreen> {
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF008173),
+                    backgroundColor: const Color(0xFF008173),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15)),
                   ),
@@ -195,13 +206,6 @@ class _OtpAuthScreenState extends ConsumerState<OtpAuthScreen> {
                     child: const Text('Resend OTP'),
                   ),
               ],
-            ),
-            Positioned(
-              child: Image.asset(
-                'assets/images/Dots.png',
-                height: screenHeight * 0.45,
-                fit: BoxFit.cover,
-              ),
             ),
           ],
         ),

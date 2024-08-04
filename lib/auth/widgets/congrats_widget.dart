@@ -18,7 +18,7 @@ class CongratsWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Image.asset(
-                'assets/images/congrats.png.png',
+                'assets/images/congrats.png.png', 
                 height: screenHeight * 0.4 * 0.4,
               ),
               Text('Account Created',
