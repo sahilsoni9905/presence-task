@@ -1,8 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:presence/auth/screens/otp_auth_screen.dart';
-import 'package:presence/auth/screens/user_info_screen.dart';
 import 'package:presence/landing_page/screens/landing_page_screen.dart';
 
 void main() async {

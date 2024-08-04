@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -52,6 +54,7 @@ class AuthRepository {
     required String userOTP,
   }) async {
     try {
+      print(userOTP);
       PhoneAuthCredential credential = PhoneAuthProvider.credential(
           verificationId: verificationId, smsCode: userOTP);
       await auth.signInWithCredential(credential);
@@ -59,6 +62,8 @@ class AuthRepository {
         context,
         MaterialPageRoute(builder: (context) => UserInfoScreen()),
       );
-    } on FirebaseAuthException catch (e) {}
+    } on FirebaseAuthException catch (e) {
+      debugPrint('some error occured ' + e.toString());
+    }
   }
 }
